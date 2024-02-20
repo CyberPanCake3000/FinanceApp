@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  app:
+    container_name: finance-app
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - mongo
+      - elasticsearch
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+  mongo:
+    container_name: mongo
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0  # Use the version that suits your requirements
+    environment:
+      - "discovery.type=single-node"  # This is for development and testing, not recommended for production
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"  # Adjust the Java heap size according to your needs
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+
+volumes:
+  mongodb-data:
+    driver: local
+  elasticsearch-data:
+    driver: local
