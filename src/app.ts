@@ -1,14 +1,18 @@
+import 'dotenv/config'
 import Koa from 'koa';
 import Router from 'koa-router';
 import bodyParser from 'koa-bodyparser';
 import { Schema, model, connect, ObjectId } from 'mongoose';
 import Transaction from './models/Transactions';
-import 'dotenv/config'
+import Category from './models/Categories';
+import categoryRoutes from './controllers/category';
 
 const app = new Koa();
 const router = new Router();
 
 app.use(bodyParser());
+app.use(categoryRoutes.routes());
+app.use(categoryRoutes.allowedMethods());
 
 router.get('/', async (ctx) => {
   await connect(process.env.MONGODB_CONNSTRING as string);
@@ -21,17 +25,23 @@ router.get('/', async (ctx) => {
     description: "Grocery shopping at Supermarket",
   });
 
-  // await newT.save();
-  ctx.body = 'Hello! this is new transaction:' + JSON.stringify(newT);
-});
+  const newC = new Category({
+    name: 'new category',
+    icon: 'here is icon',
+    description: 'this is description',
+    position: 1000,
+  });
 
-router.get('/hello', async (ctx) => {
-  ctx.body = 'Hello!';
+  // await newC.save();
+
+  // await newT.save();
+  ctx.body = 'Hello! this is new transaction:' + JSON.stringify(newC);
 });
 
 app.use(router.routes()).use(router.allowedMethods());
 
-app.listen(3000, () => {
+
+app.listen(3003, () => {
   console.log('Server running on http://localhost:3000');
 });
 
