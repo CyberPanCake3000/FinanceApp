@@ -3,9 +3,9 @@ import Koa from 'koa';
 import Router from 'koa-router';
 import bodyParser from 'koa-bodyparser';
 import { Schema, model, connect, ObjectId } from 'mongoose';
-import Transaction from './models/Transactions';
-import Category from './models/Categories';
+import Category from './models/category';
 import categoryRoutes from './controllers/category';
+import Transaction from './models/transaction';
 
 const app = new Koa();
 const router = new Router();

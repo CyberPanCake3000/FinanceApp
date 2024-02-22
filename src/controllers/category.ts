@@ -1,7 +1,7 @@
 import Router from 'koa-router';
 import { Context } from 'koa';
-import Category from '../models/Categories';
-import { ICategory } from '../models/Categories';
+import Category from '../models/category';
+import { ICategory } from '../models/category';
 import { UpdateQuery } from 'mongoose';
 
 const createCategory = async (ctx: Context) => {
