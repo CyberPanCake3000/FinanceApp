@@ -17,8 +17,6 @@ const categorySchema = Joi.object({
 
 const createCategory = async (ctx: Context) => {
   try {
-    await connect(process.env.MONGODB_CONNSTRING as string);
-
     const { value, error } = categorySchema.validate(ctx.request.body);
     if (error) {
       ctx.status = 400;
