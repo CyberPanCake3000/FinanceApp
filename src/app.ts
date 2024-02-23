@@ -1,4 +1,4 @@
-import 'dotenv/config'
+import 'dotenv/config';
 import Koa from 'koa';
 import Router from 'koa-router';
 import bodyParser from 'koa-bodyparser';
@@ -16,26 +16,7 @@ app.use(categoryRoutes.allowedMethods());
 
 router.get('/', async (ctx) => {
   await connect(process.env.MONGODB_CONNSTRING as string);
-  const newT = new Transaction({
-    accountId: "5f8d4feac2ea0a1a9e456b5d",
-    categoryId: "5f8d4feac2ea0a1a9e456b5e",
-    amount: 150.00,
-    type: 'Expense',
-    date: new Date("2024-02-20"),
-    description: "Grocery shopping at Supermarket",
-  });
-
-  const newC = new Category({
-    name: 'new category',
-    icon: 'here is icon',
-    description: 'this is description',
-    position: 1000,
-  });
-
-  // await newC.save();
-
-  // await newT.save();
-  ctx.body = 'Hello! this is new transaction:' + JSON.stringify(newC);
+  ctx.body = 'hello world'
 });
 
 app.use(router.routes()).use(router.allowedMethods());

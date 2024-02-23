@@ -1,15 +1,36 @@
+import 'dotenv/config';
 import Router from 'koa-router';
 import { Context } from 'koa';
 import Category from '../models/category';
 import { ICategory } from '../models/category';
-import { UpdateQuery } from 'mongoose';
+import { UpdateQuery, connect } from 'mongoose';
+import Joi from 'joi';
+
+
+const categorySchema = Joi.object({
+  name: Joi.string().required(),
+  icon: Joi.string().allow(''),
+  description: Joi.string().allow(''), // Allow empty string
+  position: Joi.number(),
+  color: Joi.string(),
+});
 
 const createCategory = async (ctx: Context) => {
   try {
-    const category = new Category(ctx.request.body); // TODO: add here validation
+    await connect(process.env.MONGODB_CONNSTRING as string);
+
+    const { value, error } = categorySchema.validate(ctx.request.body);
+    if (error) {
+      ctx.status = 400;
+      ctx.body = { error: error.details[0].message };
+      return;
+    }
+
+    const category = new Category(value);
     await category.save();
     ctx.status = 201;
     ctx.body = category;
+
   } catch (error) {
     ctx.status = 400;
     ctx.body = error;
