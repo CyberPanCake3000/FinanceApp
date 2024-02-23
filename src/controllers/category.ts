@@ -2,8 +2,6 @@ import 'dotenv/config';
 import Router from 'koa-router';
 import { Context } from 'koa';
 import Category from '../models/category';
-import { ICategory } from '../models/category';
-import { UpdateQuery, connect } from 'mongoose';
 import Joi from 'joi';
 
 
@@ -14,6 +12,8 @@ const categorySchema = Joi.object({
   position: Joi.number(),
   color: Joi.string(),
 });
+
+const idSchema = Joi.string().pattern(/^[0-9a-fA-F]{24}$/, 'MongoDB ObjectID');
 
 const createCategory = async (ctx: Context) => {
   try {
@@ -46,6 +46,13 @@ const getCategories = async (ctx: Context) => {
 };
 
 const getCategoryById = async (ctx: Context) => {
+  const { error } = idSchema.validate(ctx.params.id);
+  if (error) {
+    ctx.status = 400;
+    ctx.body = { error: "Invalid ID format" };
+    return;
+  }
+
   try {
     const category = await Category.findById(ctx.params.id);
     if (!category) {
@@ -59,9 +66,17 @@ const getCategoryById = async (ctx: Context) => {
 
 const updateCategory = async (ctx: Context) => {
   try {
+    const { value, error } = categorySchema.validate(ctx.request.body);
+
+    if (error) {
+      ctx.status = 400;
+      ctx.body = { error: "Invalid category format" };
+      return;
+    }
+
     const category = await Category.findByIdAndUpdate(
       ctx.params.id,
-      ctx.request.body as UpdateQuery<ICategory>, // TODO: change here validation
+      value,
       { new: true }
     );
     if (!category) {
@@ -75,6 +90,13 @@ const updateCategory = async (ctx: Context) => {
 };
 
 const deleteCategory = async (ctx: Context) => {
+  const { error } = idSchema.validate(ctx.params.id);
+  if (error) {
+    ctx.status = 400;
+    ctx.body = { error: "Invalid ID format" };
+    return;
+  }
+
   try {
     const category = await Category.findByIdAndDelete(ctx.params.id); // TODO: validation
     if (!category) {
