@@ -2,10 +2,7 @@ import 'dotenv/config';
 import Koa from 'koa';
 import Router from 'koa-router';
 import bodyParser from 'koa-bodyparser';
-import { Schema, model, connect, ObjectId } from 'mongoose';
-import Category from './models/category';
-import categoryRoutes from './controllers/category';
-import Transaction from './models/transaction';
+import categoryRoutes from './api/controllers/category-controller/category';
 import { initDB } from './connect';
 import { config } from './config';
 
