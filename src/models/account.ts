@@ -15,8 +15,6 @@ export interface IAccount extends Document {
   description: string,
   balance: number,
   currency: string,
-  createdAt: Date,
-  updatedAt: Date,
   type: AccountType,
 }
 
@@ -26,12 +24,13 @@ const schema = new mongoose.Schema({
   description: String,
   balance: Number,
   currency: String,
-  createdAt: Date,
-  updatedAt: Date,
   type: {
     type: String,
     enum: Object.values(AccountType)
   },
+},
+{
+  timestamps: true
 });
 
 const Account = model<IAccount>('Accounts', schema);

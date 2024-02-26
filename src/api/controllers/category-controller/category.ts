@@ -92,12 +92,12 @@ const deleteCategory = async (ctx: Context) => {
   }
 };
 
-const router = new Router();
+const categoryRoutes = new Router();
 
-router.post('/categories', createCategory);
-router.get('/categories', getCategories);
-router.get('/categories/:id', validateId, getCategoryById);
-router.delete('/categories/:id', validateId, deleteCategory);
-router.put('/categories/:id', validateId, updateCategory);
+categoryRoutes.post('/categories', createCategory);
+categoryRoutes.get('/categories', getCategories);
+categoryRoutes.get('/categories/:id', validateId, getCategoryById);
+categoryRoutes.delete('/categories/:id', validateId, deleteCategory);
+categoryRoutes.put('/categories/:id', validateId, updateCategory);
 
-export default router;
+export default categoryRoutes;

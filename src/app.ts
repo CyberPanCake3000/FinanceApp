@@ -5,6 +5,7 @@ import bodyParser from 'koa-bodyparser';
 import categoryRoutes from './api/controllers/category-controller/category';
 import { initDB } from './connect';
 import { config } from './config';
+import accountRoutes from './api/controllers/account-controller/account';
 
 const app = new Koa();
 const router = new Router();
@@ -12,7 +13,7 @@ const router = new Router();
   await initDB(config);
   app.use(bodyParser());
   app.use(categoryRoutes.routes());
-  app.use(categoryRoutes.allowedMethods());
+  app.use(accountRoutes.routes());
 
   router.get('/', async (ctx) => {
     ctx.body = 'hello world'
