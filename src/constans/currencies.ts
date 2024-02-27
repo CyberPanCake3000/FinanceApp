@@ -1,4 +1,4 @@
-{
+export const currencies = {
   "USD": {
     "currency": "United States Dollar",
     "isoName": "USD",
@@ -33,6 +33,12 @@
     "currency": "Russian ruble",
     "isoName": "RUB",
     "symbol": "₽",
+    "decimalPlaces": 2
+  },
+  "GEL": {
+    "currency": "Georgian lari",
+    "isoName": "GEL",
+    "symbol": "₾",
     "decimalPlaces": 2
   }
 }

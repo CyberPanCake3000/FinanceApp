@@ -5,6 +5,7 @@ export enum TransactionType {
   EXPENSE = 'expense',
   INCOME = 'income'
 }
+
 export interface ITransaction extends Document {
   accountId: ObjectId;
   categoryId: ObjectId;
