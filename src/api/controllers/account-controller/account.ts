@@ -1,6 +1,6 @@
 import { Context } from 'koa';
 import Router from 'koa-router';
-import { validateId } from '../../../middleware/validation';
+import { validateId, validateCurrency } from '../../../middleware/validation';
 import { createAccountSchema, updateAccountSchema } from './account-schemas';
 import Account, { AccountType } from '../../../models/account';
 import { ObjectId } from 'mongoose';
@@ -96,11 +96,11 @@ const deleteAccount = async (ctx: Context) => {
 
 const accountRoutes = new Router();
 
-accountRoutes.post('/account', createAccount);
+accountRoutes.post('/account', validateCurrency, createAccount);
 accountRoutes.get('/accounts', getAccounts);
 accountRoutes.get('/account/:id', validateId, getAccountById);
 accountRoutes.delete('/account/:id', validateId, deleteAccount);
-accountRoutes.put('/account/:id', validateId, updateAccount);
+accountRoutes.put('/account/:id', validateId, validateCurrency, updateAccount);
 
 export default accountRoutes;
 
