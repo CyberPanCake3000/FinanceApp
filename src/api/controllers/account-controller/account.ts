@@ -96,11 +96,11 @@ const deleteAccount = async (ctx: Context) => {
 
 const accountRoutes = new Router();
 
-accountRoutes.post('/accounts', createAccount);
+accountRoutes.post('/account', createAccount);
 accountRoutes.get('/accounts', getAccounts);
-accountRoutes.get('/accounts/:id', validateId, getAccountById);
-accountRoutes.delete('/accounts/:id', validateId, deleteAccount);
-accountRoutes.put('/accounts/:id', validateId, updateAccount);
+accountRoutes.get('/account/:id', validateId, getAccountById);
+accountRoutes.delete('/account/:id', validateId, deleteAccount);
+accountRoutes.put('/account/:id', validateId, updateAccount);
 
 export default accountRoutes;
 
