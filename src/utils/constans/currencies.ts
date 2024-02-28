@@ -1,4 +1,11 @@
-export const currencies = {
+interface Currency {
+  "currency": string,
+  "isoName": string,
+  "symbol": string,
+  "decimalPlaces": number
+}
+
+export const currencies: Record<string, Currency> = {
   "USD": {
     "currency": "United States Dollar",
     "isoName": "USD",

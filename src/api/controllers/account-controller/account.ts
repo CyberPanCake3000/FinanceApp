@@ -4,6 +4,7 @@ import { validateId, validateCurrency } from '../../../middleware/validation';
 import { createAccountSchema, updateAccountSchema } from './account-schemas';
 import Account, { AccountType } from '../../../models/account';
 import { ObjectId } from 'mongoose';
+import { currencies } from '../../../utils/constans/currencies';
 
 interface UpdateAccountRequest {
   userId?: ObjectId,
@@ -22,6 +23,10 @@ const createAccount = async (ctx: Context) => {
     return;
   }
 
+  if (value.currency) {
+    value.balance = value.balance * Math.pow(10, currencies[value.currency].decimalPlaces);
+  }
+
   try {
     const account = new Account(value);
     await account.save();
@@ -36,6 +41,11 @@ const createAccount = async (ctx: Context) => {
 const getAccounts = async (ctx: Context) => {
   try {
     const accounts = await Account.find({});
+
+    accounts.forEach(account => {
+      account.balance = account.balance / Math.pow(10, currencies[account.currency].decimalPlaces)
+    });
+
     ctx.body = accounts;
   } catch (error) {
     ctx.status = 400;
@@ -46,9 +56,13 @@ const getAccounts = async (ctx: Context) => {
 const getAccountById = async (ctx: Context) => {
   try {
     const account = await Account.findById(ctx.params.id);
-    if (!account) {
+
+    if (account) {
+      account.balance = account.balance / Math.pow(10, currencies[account.currency].decimalPlaces)
+    } else {
       ctx.throw(404, 'Account not found');
     }
+
     ctx.body = account;
   } catch (error) {
     ctx.body = error;
@@ -62,6 +76,10 @@ const updateAccount = async (ctx: Context) => {
     ctx.status = 400;
     ctx.body = { error: error.details[0].message };
     return;
+  }
+
+  if (value.currency) {
+    value.balance = value.balance * Math.pow(10, currencies[value.currency].decimalPlaces);
   }
 
   try {

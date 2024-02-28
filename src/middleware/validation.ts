@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa';
 import Joi from 'joi';
-import { currencies } from '../constans/currencies';
+import { currencies } from '../utils/constans/currencies';
 import { ObjectId } from 'mongoose';
 
 const idSchema = Joi.string().pattern(/^[0-9a-fA-F]{24}$/, 'MongoDB ObjectID');
