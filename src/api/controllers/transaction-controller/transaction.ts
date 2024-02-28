@@ -4,6 +4,7 @@ import Transaction, { TransactionType } from '../../../models/transaction';
 import { validateId } from '../../../middleware/validation';
 import { createTransactionSchema, updateTransactionSchema } from './transaction-schema';
 import { ObjectId } from 'mongoose';
+import { parse } from 'json2csv';
 
 interface UpdateTransactionRequest {
   accountId?: ObjectId;
@@ -96,14 +97,27 @@ const deleteTransaction = async (ctx: Context) => {
 };
 
 const exportTransactions = async (ctx: Context) => {
-  console.log('export');
+  try {
+    const data = await Transaction.find( { accountId: ctx.params.id } ).lean().exec();
+
+    const csv = parse(data);
+
+    ctx.set('Content-disposition', 'attachment; filename=data.csv');
+    ctx.set('Content-Type', 'text/csv');
+
+    ctx.body = csv;
+
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = 'Failed to export CSV';
+  }
 }
 
 const transactionRoutes = new Router();
 
 transactionRoutes.post('/transaction', createTransaction);
 transactionRoutes.get('/transactions', getUserTransactions);
-transactionRoutes.get('/export-transactions', exportTransactions);
+transactionRoutes.get('/export-transactions/:id', validateId, exportTransactions);
 transactionRoutes.get('/transaction/:id', validateId, getUserTransactonById);
 transactionRoutes.delete('/transaction/:id', validateId, deleteTransaction);
 transactionRoutes.put('/transaction/:id', validateId, updateTransation);
