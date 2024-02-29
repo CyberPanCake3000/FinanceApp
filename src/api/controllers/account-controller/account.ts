@@ -4,8 +4,8 @@ import { validateId, validateCurrency } from '../../../middleware/validation';
 import { createAccountSchema, updateAccountSchema } from './account-schemas';
 import Account, { AccountType } from '../../../models/account';
 import { ObjectId } from 'mongoose';
-import { currencies } from '../../../utils/constans/currencies';
 import { convertToSubunits, convertFromSubunits } from '../../../utils/utils';
+import Transaction from '../../../models/transaction';
 
 interface UpdateAccountRequest {
   userId?: ObjectId,
@@ -14,7 +14,7 @@ interface UpdateAccountRequest {
   balance?: number,
   currency?: string,
   type?: AccountType,
-  deletedAt: Date | null
+  deletedAt?: Date | null
 }
 
 const createAccount = async (ctx: Context) => {
@@ -100,14 +100,40 @@ const updateAccount = async (ctx: Context) => {
   }
 }
 
-const deleteAccount = async (ctx: Context) => {
+const getAccountTransactions = async (ctx: Context) => {
   try {
-    const account = await Account.findByIdAndDelete(ctx.params.id);
+    const account = await Account.findById(ctx.params.id);
     if (!account) {
       ctx.throw(404, 'Account not found');
     }
+
+    const transactions = await Transaction.find({ accountId: account.id });
+
+    transactions.forEach(transaction => {
+      transaction.amount = convertFromSubunits(transaction.amount, account.currency);
+    });
+
     ctx.status = 200;
-    ctx.body = 'Account deleted';
+    ctx.body = transactions;
+  } catch (error) {
+    ctx.status = 400;
+    ctx.body = error;
+  }
+}
+
+const deleteAccount = async (ctx: Context) => {
+  try {
+    const account = await Account.findByIdAndUpdate(
+      ctx.params.id,
+      { deletedAt: new Date()}
+    );
+
+    if (!account) {
+      ctx.throw(404, 'Account not found');
+    }
+
+    ctx.status = 200;
+    ctx.body = account;
   } catch (error) {
     ctx.status = 400;
     ctx.body = error;
@@ -119,6 +145,7 @@ const accountRoutes = new Router();
 accountRoutes.post('/account', validateCurrency, createAccount);
 accountRoutes.get('/accounts', getAccounts);
 accountRoutes.get('/account/:id', validateId, getAccountById);
+accountRoutes.get('/account-history/:id', validateId, getAccountTransactions);
 accountRoutes.delete('/account/:id', validateId, deleteAccount);
 accountRoutes.put('/account/:id', validateId, validateCurrency, updateAccount);
 
