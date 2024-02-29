@@ -5,7 +5,7 @@ import { createAccountSchema, updateAccountSchema } from './account-schemas';
 import Account, { AccountType } from '../../../models/account';
 import { ObjectId } from 'mongoose';
 import { currencies } from '../../../utils/constans/currencies';
-import { convertToSubunits } from '../../../utils/utils';
+import { convertToSubunits, convertFromSubunits } from '../../../utils/utils';
 
 interface UpdateAccountRequest {
   userId?: ObjectId,
@@ -14,6 +14,7 @@ interface UpdateAccountRequest {
   balance?: number,
   currency?: string,
   type?: AccountType,
+  deletedAt: Date | null
 }
 
 const createAccount = async (ctx: Context) => {
@@ -44,7 +45,7 @@ const getAccounts = async (ctx: Context) => {
     const accounts = await Account.find({});
 
     accounts.forEach(account => {
-      account.balance = account.balance / Math.pow(10, currencies[account.currency].decimalPlaces)
+      account.balance = convertFromSubunits(account.balance, account.currency);
     });
 
     ctx.body = accounts;
@@ -59,7 +60,7 @@ const getAccountById = async (ctx: Context) => {
     const account = await Account.findById(ctx.params.id);
 
     if (account) {
-      account.balance = account.balance / Math.pow(10, currencies[account.currency].decimalPlaces)
+      account.balance = convertFromSubunits(account.balance, account.currency);
     } else {
       ctx.throw(404, 'Account not found');
     }
@@ -83,7 +84,7 @@ const updateAccount = async (ctx: Context) => {
     if (value.currency) {
       value.balance = convertToSubunits(value.balance, value.currency);
     }
-    
+
     const account = await Account.findByIdAndUpdate(
       ctx.params.id,
       value as UpdateAccountRequest,

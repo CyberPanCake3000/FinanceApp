@@ -16,6 +16,7 @@ export interface IAccount extends Document {
   balance: number,
   currency: string,
   type: AccountType,
+  deletedAt: Date | null
 }
 
 const schema = new mongoose.Schema({
@@ -28,6 +29,7 @@ const schema = new mongoose.Schema({
     type: String,
     enum: Object.values(AccountType)
   },
+  deletedAt: { type: Date, default: null },
 },
 {
   timestamps: true

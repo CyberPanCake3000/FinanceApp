@@ -20,6 +20,7 @@ const updateAccountSchema = Joi.object({
   balance: accountFieldsValidation.balance.optional(),
   currency: accountFieldsValidation.currency.optional(),
   type: accountFieldsValidation.type.optional(),
+  deletedAt: Joi.date(),
 }).min(1);
 
 export { createAccountSchema, updateAccountSchema };

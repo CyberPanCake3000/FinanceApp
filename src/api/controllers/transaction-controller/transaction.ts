@@ -77,7 +77,7 @@ const updateTransation = async (ctx: Context) => {
     if (value.currency) {
       value.balance = convertToSubunits(value.balance, value.currency);
     }
-    
+
     const transaction = await Transaction.findByIdAndUpdate(
       ctx.params.id,
       value as UpdateTransactionRequest,
