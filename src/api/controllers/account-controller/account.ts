@@ -5,6 +5,7 @@ import { createAccountSchema, updateAccountSchema } from './account-schemas';
 import Account, { AccountType } from '../../../models/account';
 import { ObjectId } from 'mongoose';
 import { currencies } from '../../../utils/constans/currencies';
+import { convertToSubunits } from '../../../utils/utils';
 
 interface UpdateAccountRequest {
   userId?: ObjectId,
@@ -23,11 +24,11 @@ const createAccount = async (ctx: Context) => {
     return;
   }
 
-  if (value.currency) {
-    value.balance = value.balance * Math.pow(10, currencies[value.currency].decimalPlaces);
-  }
-
   try {
+    if (value.currency) {
+      value.balance = convertToSubunits(value.balance, value.currency);
+    }
+
     const account = new Account(value);
     await account.save();
     ctx.status = 201;
@@ -78,11 +79,11 @@ const updateAccount = async (ctx: Context) => {
     return;
   }
 
-  if (value.currency) {
-    value.balance = value.balance * Math.pow(10, currencies[value.currency].decimalPlaces);
-  }
-
   try {
+    if (value.currency) {
+      value.balance = convertToSubunits(value.balance, value.currency);
+    }
+    
     const account = await Account.findByIdAndUpdate(
       ctx.params.id,
       value as UpdateAccountRequest,

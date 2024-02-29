@@ -5,6 +5,7 @@ import { validateId } from '../../../middleware/validation';
 import { createTransactionSchema, updateTransactionSchema } from './transaction-schema';
 import { ObjectId } from 'mongoose';
 import { parse } from 'json2csv';
+import { convertToSubunits } from '../../../utils/utils';
 
 interface UpdateTransactionRequest {
   accountId?: ObjectId;
@@ -24,6 +25,11 @@ const createTransaction = async (ctx: Context) => {
   }
 
   try {
+
+    if (value.currency) {
+      value.balance = convertToSubunits(value.balance, value.currency);
+    }
+
     const transaction = new Transaction(value);
     transaction.date = new Date(value.date);
     await transaction.save();
@@ -67,6 +73,11 @@ const updateTransation = async (ctx: Context) => {
   }
 
   try {
+
+    if (value.currency) {
+      value.balance = convertToSubunits(value.balance, value.currency);
+    }
+    
     const transaction = await Transaction.findByIdAndUpdate(
       ctx.params.id,
       value as UpdateTransactionRequest,
