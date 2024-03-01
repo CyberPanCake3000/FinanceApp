@@ -6,6 +6,7 @@ import { createTransactionSchema, updateTransactionSchema } from './transaction-
 import { ObjectId } from 'mongoose';
 import { parse } from 'json2csv';
 import { convertToSubunits } from '../../../utils/utils';
+import Category from '../../../models/category';
 
 interface UpdateTransactionRequest {
   accountId?: ObjectId;
@@ -109,9 +110,20 @@ const deleteTransaction = async (ctx: Context) => {
 
 const exportTransactions = async (ctx: Context) => {
   try {
-    const data = await Transaction.find( { accountId: ctx.params.id } ).lean().exec();
+    const transactions = await Transaction.find( { accountId: ctx.params.id } ).lean().exec();
 
-    const csv = parse(data);
+    const categoriesMap = new Map();
+    const categories = await Category.find().lean().exec();
+    categories.forEach(category => {
+      categoriesMap.set(category._id.toString(), category.name);
+    });
+
+    const transactionsWithCategoryNames = transactions.map(transaction => ({
+      ...transaction,
+      categoryId: categoriesMap.get(transaction.categoryId.toString()) || '-',
+    }));
+
+    const csv = parse(transactionsWithCategoryNames);
 
     ctx.set('Content-disposition', 'attachment; filename=data.csv');
     ctx.set('Content-Type', 'text/csv');
