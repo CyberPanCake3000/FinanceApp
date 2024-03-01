@@ -108,7 +108,7 @@ const deleteTransaction = async (ctx: Context) => {
   }
 };
 
-const exportTransactions = async (ctx: Context) => {
+export const exportTransactions = async (ctx: Context) => {
   try {
     const transactions = await Transaction.find( { accountId: ctx.params.id } ).lean().exec();
 
