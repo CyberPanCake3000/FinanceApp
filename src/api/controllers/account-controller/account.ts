@@ -123,17 +123,25 @@ const getAccountTransactions = async (ctx: Context) => {
 
 const deleteAccount = async (ctx: Context) => {
   try {
-    const account = await Account.findByIdAndUpdate(
-      ctx.params.id,
-      { deletedAt: new Date()}
-    );
+    const account = await Account.findById(ctx.params.id);
 
     if (!account) {
       ctx.throw(404, 'Account not found');
     }
 
+    if (account.deletedAt) {
+      ctx.status = 409;
+      ctx.body = 'Account already deleted';
+      return;
+    }
+
+    await Account.findByIdAndUpdate(
+      ctx.params.id,
+      { deletedAt: new Date()}
+    );
+
     ctx.status = 200;
-    ctx.body = account;
+    ctx.body = "Account deleted";
   } catch (error) {
     ctx.status = 400;
     ctx.body = error;

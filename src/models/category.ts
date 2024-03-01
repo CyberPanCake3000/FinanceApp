@@ -7,6 +7,7 @@ export interface ICategory extends Document {
   description: string,
   position: number,
   color: string,
+  deletedAt: Date
 }
 
 const schema = new mongoose.Schema({
@@ -14,7 +15,8 @@ const schema = new mongoose.Schema({
   icon: { type: String, required: false },
   description: { type: String, required: false },
   position: { type: Number, required: false },
-  color: { type: String, required: false }
+  color: { type: String, required: false },
+  deletedAt: { type: Date, required: false, default: null },
 });
 
 const Category = model<ICategory>('Categories', schema);

@@ -80,10 +80,23 @@ const updateCategory = async (ctx: Context) => {
 
 const deleteCategory = async (ctx: Context) => {
   try {
-    const category = await Category.findByIdAndDelete(ctx.params.id);
+    const category = await Category.findById(ctx.params.id);
+
     if (!category) {
       ctx.throw(404, 'Category not found');
     }
+
+    if (category.deletedAt) {
+      ctx.status = 409;
+      ctx.body = 'Category already deleted';
+      return;
+    }
+
+    await Category.findByIdAndUpdate(
+      ctx.params.id,
+      { deletedAt: new Date() }
+    );
+
     ctx.status = 200;
     ctx.body = 'Category deleted';
   } catch (error) {
@@ -91,6 +104,7 @@ const deleteCategory = async (ctx: Context) => {
     ctx.body = error;
   }
 };
+
 
 const categoryRoutes = new Router();
 
