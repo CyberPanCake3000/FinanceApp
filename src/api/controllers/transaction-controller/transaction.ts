@@ -7,6 +7,7 @@ import { ObjectId } from 'mongoose';
 import { parse } from 'json2csv';
 import { convertToSubunits } from '../../../utils/utils';
 import Category from '../../../models/category';
+import { TransactionsService } from '../../../services/transactions-service/transactions-service';
 
 interface UpdateTransactionRequest {
   accountId?: ObjectId;
@@ -110,20 +111,16 @@ const deleteTransaction = async (ctx: Context) => {
 
 export const exportTransactions = async (ctx: Context) => {
   try {
-    const transactions = await Transaction.find( { accountId: ctx.params.id } ).lean().exec();
+    const accountId = ctx.params.id;
 
-    const categoriesMap = new Map();
-    const categories = await Category.find().lean().exec();
-    categories.forEach(category => {
-      categoriesMap.set(category._id.toString(), category.name);
+    const transactionsService = new TransactionsService({
+      transactionModel: Transaction,
+      categoryModel: Category,
     });
 
-    const transactionsWithCategoryNames = transactions.map(transaction => ({
-      ...transaction,
-      categoryId: categoriesMap.get(transaction.categoryId.toString()) || '-',
-    }));
+    const raw = await transactionsService.exportTransactionsToCSV(accountId);
 
-    const csv = parse(transactionsWithCategoryNames);
+    const csv = parse(raw);
 
     ctx.set('Content-disposition', 'attachment; filename=data.csv');
     ctx.set('Content-Type', 'text/csv');
