@@ -115,7 +115,6 @@ export const exportTransactions = async (ctx: Context) => {
 
     const transactionsService = new TransactionsService({
       transactionModel: Transaction,
-      categoryModel: Category,
     });
 
     const raw = await transactionsService.exportTransactionsToCSV(accountId);

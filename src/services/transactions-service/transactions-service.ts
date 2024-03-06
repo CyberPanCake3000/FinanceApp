@@ -1,18 +1,15 @@
 import Transaction from '../../models/transaction';
-import Category from '../../models/category';
+import { Types } from 'mongoose';
 
 interface TransactionsServiceDependencies {
   transactionModel: typeof Transaction,
-  categoryModel: typeof Category,
 }
 
 export class TransactionsService {
   private transactionModel: typeof Transaction;
-  private categoryModel: typeof Category;
 
   constructor (dependecies: TransactionsServiceDependencies) {
     this.transactionModel = dependecies.transactionModel;
-    this.categoryModel = dependecies.categoryModel;
   }
 
   async exportTransactionsToCSV(accountId?: string) {
@@ -20,19 +17,49 @@ export class TransactionsService {
       throw new Error('Incorrect account ID')
     }
 
-    const transactions = await this.transactionModel.find({ accountId }).lean().exec();
+    const accountObjectId = new Types.ObjectId(accountId);
 
-    const categoriesMap = new Map();
-    const categories = await this.categoryModel.find().lean().exec();
-    categories.forEach(category => {
-      categoriesMap.set(category._id.toString(), category.name);
-    });
+    const transactionsWithCategories = await this.transactionModel.aggregate(
+      [
+        {
+          $match:
+          {
+            accountId: accountObjectId,
+          },
+        },
+        {
+          $lookup:
+          {
+            from: "categories",
+            localField: "categoryId",
+            foreignField: "_id",
+            as: "categoryInfo",
+          },
+        },
+        {
+          $unwind:
+          {
+            path: "$categoryInfo",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project:
+          {
+            "Transaction ID": "$_id",
+            "Account ID": "$accountId",
+            "Category ID": "$categoryId",
+            "Category name": "$categoryInfo.name",
+            Amount: "$amount",
+            Type: "$type",
+            Date: "$date",
+            Description: "$description",
+          },
+        },
+      ]
 
-    const transactionsWithCategoryNames = transactions.map(transaction => ({
-      ...transaction,
-      categoryId: categoriesMap.get(transaction.categoryId.toString()) || '-',
-    }));
+    );
 
-    return transactionsWithCategoryNames;
+    return transactionsWithCategories;
   }
 }
