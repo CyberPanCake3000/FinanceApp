@@ -6,6 +6,8 @@ import Account, { AccountType } from '../../../models/account';
 import { ObjectId } from 'mongoose';
 import { convertToSubunits, convertFromSubunits } from '../../../utils/utils';
 import Transaction from '../../../models/transaction';
+import { TransactionsService } from '../../../services/transactions-service/transactions-service';
+import { AccountsService } from '../../../services/accounts-service/accounts-service';
 
 interface UpdateAccountRequest {
   userId?: ObjectId,
@@ -102,16 +104,14 @@ const updateAccount = async (ctx: Context) => {
 
 const getAccountTransactions = async (ctx: Context) => {
   try {
-    const account = await Account.findById(ctx.params.id);
-    if (!account) {
-      ctx.throw(404, 'Account not found');
-    }
+    const accountId = ctx.params.id;
 
-    const transactions = await Transaction.find({ accountId: account.id });
-
-    transactions.forEach(transaction => {
-      transaction.amount = convertFromSubunits(transaction.amount, account.currency);
+    const accountService = new AccountsService({
+      accountModel: Account,
+      transactionModel: Transaction,
     });
+
+    const transactions = await accountService.getAccountTransactions(accountId);
 
     ctx.status = 200;
     ctx.body = transactions;

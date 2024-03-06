@@ -4,10 +4,6 @@ describe('TrasactionsService', () => {
   let transactionsService: TransactionsService;
   let transactionModelMock: any;
 
-  beforeEach(() => {
-
-  })
-
   it('should return transactions with categories', async () => {
     // GIVEN
     const accountId = '5f8d4feac2ea0a1a9e456b5d'
