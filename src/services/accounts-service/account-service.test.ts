@@ -1,51 +1,41 @@
 import { AccountsService } from './accounts-service';
-import Account from '../../models/account';
 import Transaction from '../../models/transaction';
-import { convertFromSubunits } from '../../utils/utils';
-
-jest.mock('../../models/account', () => ({
-  findById: jest.fn()
-}));
+import * as utils from '../../utils/utils';
 
 jest.mock('../../models/transaction', () => ({
-  find: jest.fn()
+  find: jest.fn(),
 }));
 
 jest.mock('../../utils/utils', () => ({
-  convertFromSubunits: jest.fn().mockImplementation((amount) => amount / 100)
+  convertFromSubunits: jest.fn().mockImplementation((amount) => amount),
 }));
 
 describe('AccountsService', () => {
-  const mockedAccountModel = Account as jest.Mocked<typeof Account>;
+  let service: AccountsService;
   const mockedTransactionModel = Transaction as jest.Mocked<typeof Transaction>;
-  const service = new AccountsService({ accountModel: mockedAccountModel, transactionModel: mockedTransactionModel });
 
   beforeEach(() => {
     jest.clearAllMocks();
+    service = new AccountsService({ transactionModel: mockedTransactionModel });
   });
 
   it('should throw an error if no accountId is provided', async () => {
     await expect(service.getAccountTransactions()).rejects.toThrow('Incorrect account ID');
   });
 
-  it('should throw an error if account not found', async () => {
-    mockedAccountModel.findById.mockResolvedValue(null);
-    await expect(service.getAccountTransactions('someAccountId')).rejects.toThrow('Account not found');
-  });
-
   it('should return converted account transactions', async () => {
-    const mockAccountId = 'testAccountId';
-    const mockAccount = { _id: mockAccountId, currency: 'USD' };
     const mockTransactions = [
-      { accountId: mockAccountId, amount: 10000 },
+      { amount: 10000, currency: 'USD' },
     ];
-
-    mockedAccountModel.findById.mockResolvedValue(mockAccount as any);
     mockedTransactionModel.find.mockResolvedValue(mockTransactions as any);
 
-    const transactions = await service.getAccountTransactions(mockAccountId);
+    const mockAmount = 100;
+    (utils.convertFromSubunits as jest.Mock).mockImplementation(() => mockAmount);
 
-    expect(transactions[0].amount).toBe(100);
-    expect(convertFromSubunits).toHaveBeenCalledWith(10000, 'USD');
+    const transactions = await service.getAccountTransactions('validAccountId');
+
+    expect(mockedTransactionModel.find).toHaveBeenCalledWith({ accountId: 'validAccountId' });
+    expect(transactions[0].amount).toBe(mockAmount);
+    expect(utils.convertFromSubunits).toHaveBeenCalledWith(10000, 'USD');
   });
 });

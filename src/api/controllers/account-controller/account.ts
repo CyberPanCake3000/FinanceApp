@@ -107,7 +107,6 @@ const getAccountTransactions = async (ctx: Context) => {
     const accountId = ctx.params.id;
 
     const accountService = new AccountsService({
-      accountModel: Account,
       transactionModel: Transaction,
     });
 
