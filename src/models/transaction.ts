@@ -13,6 +13,7 @@ export interface ITransaction extends Document {
   type: TransactionType;
   date: Date;
   description: string;
+  currency: string;
 }
 
 const schema = new mongoose.Schema({
@@ -24,7 +25,8 @@ const schema = new mongoose.Schema({
     enum: Object.values(TransactionType)
   },
   date: Date,
-  description: String
+  description: String,
+  currency: String,
 });
 
 const Transaction = model<ITransaction>('Transactions', schema);

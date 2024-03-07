@@ -7,6 +7,7 @@ export const createTransactionSchema = Joi.object({
   amount: Joi.number().required(),
   type: Joi.string().valid(...Object.values(TransactionType)).required(),
   date: Joi.date().required(),
+  currency: Joi.string().required(),
   description: Joi.string().allow('').optional(),
 });
 

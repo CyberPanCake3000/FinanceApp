@@ -5,8 +5,7 @@ import { validateId } from '../../../middleware/validation';
 import { createTransactionSchema, updateTransactionSchema } from './transaction-schema';
 import { ObjectId } from 'mongoose';
 import { parse } from 'json2csv';
-import { convertToSubunits } from '../../../utils/utils';
-import Category from '../../../models/category';
+import { convertFromSubunits, convertToSubunits } from '../../../utils/utils';
 import { TransactionsService } from '../../../services/transactions-service/transactions-service';
 
 interface UpdateTransactionRequest {
@@ -16,25 +15,25 @@ interface UpdateTransactionRequest {
   type?: TransactionType;
   date?: Date;
   description? : string;
+  currency?: string;
 }
 
 const createTransaction = async (ctx: Context) => {
   const { value, error } = createTransactionSchema.validate(ctx.request.body);
   if (error) {
     ctx.status = 400;
-    ctx.body = { error: error.details[0].message };
+    ctx.body = error;
     return;
   }
 
   try {
+    const transactionValue = {
+      ...value,
+      amount: value.currency ? convertToSubunits(value.amount, value.currency) : value.amount,
+      date: new Date(value.date)
+    };
 
-    if (value.currency) {
-      value.balance = convertToSubunits(value.balance, value.currency);
-    }
-
-    const transaction = new Transaction(value);
-    transaction.date = new Date(value.date);
-    await transaction.save();
+    const transaction = await new Transaction(transactionValue).save();
     ctx.status = 201;
     ctx.body = transaction;
   } catch (error) {
@@ -46,6 +45,11 @@ const createTransaction = async (ctx: Context) => {
 const getUserTransactions = async (ctx: Context) => {
   try {
     const transactions = await Transaction.find({});
+    transactions.forEach(transaction => {
+      if (transaction.currency) {
+        transaction.amount = convertFromSubunits(transaction.amount, transaction.currency);
+      }
+    });
     ctx.body = transactions;
   } catch (error) {
     ctx.status = 400;
@@ -59,6 +63,11 @@ const getUserTransactonById = async (ctx: Context) => {
     if (!transaction) {
       ctx.throw(404, 'Transaction not found');
     }
+
+    if (transaction.currency) {
+      transaction.amount = convertFromSubunits(transaction.amount, transaction.currency);
+    }
+
     ctx.body = transaction;
   } catch (error) {
     ctx.body = error;
@@ -70,14 +79,14 @@ const updateTransation = async (ctx: Context) => {
 
   if (error) {
     ctx.status = 400;
-    ctx.body = { error: error.details[0].message };
+    ctx.body = error;
     return;
   }
 
   try {
 
     if (value.currency) {
-      value.balance = convertToSubunits(value.balance, value.currency);
+      value.amount = convertToSubunits(value.amount, value.currency);
     }
 
     const transaction = await Transaction.findByIdAndUpdate(
