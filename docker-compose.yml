@@ -20,9 +20,9 @@ services:
       - "${MONGODB_PORT}:27017"
     volumes:
       - mongodb-data:/data/db
+    environment:
+      - MONGO_URI="${DBCONN_STRING}"
 
 volumes:
   mongodb-data:
-    driver: local
-  elasticsearch-data:
     driver: local
